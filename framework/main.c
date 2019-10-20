@@ -11,8 +11,6 @@
 #include <interface.h>
 
 #define LIBRARY_FILE "libengine.so"
-#define DEFAULT_WIDTH 800
-#define DEFAULT_HEIGHT 600
 
 typedef struct
 {
@@ -68,6 +66,16 @@ void register_framework_functions(Interface *func)
     /* Register vulkan functions */
     func->vkCreateInstance = vkCreateInstance;
     func->vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    func->vkEnumeratePhysicalDevices = vkEnumeratePhysicalDevices;
+    func->vkGetPhysicalDeviceQueueFamilyProperties = vkGetPhysicalDeviceQueueFamilyProperties;
+    func->vkGetPhysicalDeviceSurfaceSupportKHR = vkGetPhysicalDeviceSurfaceSupportKHR;
+    func->vkCreateDevice = vkCreateDevice;
+    func->vkGetDeviceQueue = vkGetDeviceQueue;
+    func->vkGetPhysicalDeviceSurfaceFormatsKHR = vkGetPhysicalDeviceSurfaceFormatsKHR;
+    func->vkGetPhysicalDeviceSurfacePresentModesKHR = vkGetPhysicalDeviceSurfacePresentModesKHR;
+    func->vkGetPhysicalDeviceSurfaceCapabilitiesKHR = vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+    func->vkCreateSwapchainKHR = vkCreateSwapchainKHR;
+    func->vkGetSwapchainImagesKHR = vkGetSwapchainImagesKHR;
 }
 
 void reload_library(LibraryState *lib_state)

@@ -7,6 +7,14 @@
 #include <SDL2/SDL.h>
 
 #define MAX_EXTENSIONS 16
+#define MAX_DEVICE_COUNT 2
+#define MAX_QUEUE_COUNT 4
+#define MAX_PRESENT_MODES_COUNT 6
+#define MAX_SWAPCHAIN_IMAGES 3
+
+#define DEFAULT_WIDTH 800
+#define DEFAULT_HEIGHT 600
+
 
 typedef struct
 {
@@ -38,6 +46,16 @@ struct Interface
     PFN_vkCreateInstance vkCreateInstance;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
     PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
+    PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties vkGetPhysicalDeviceQueueFamilyProperties;
+    PFN_vkGetPhysicalDeviceSurfaceSupportKHR vkGetPhysicalDeviceSurfaceSupportKHR;
+    PFN_vkCreateDevice vkCreateDevice;
+    PFN_vkGetDeviceQueue vkGetDeviceQueue;
+    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR vkGetPhysicalDeviceSurfaceFormatsKHR;
+    PFN_vkGetPhysicalDeviceSurfacePresentModesKHR vkGetPhysicalDeviceSurfacePresentModesKHR;
+    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+    PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR;
+    PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR;
     
     /* Data */
     AppInfo app_info;
@@ -49,6 +67,12 @@ struct Interface
     VkInstance instance;
     VkDebugReportCallbackEXT debug_callback;
     VkSurfaceKHR surface;
+    VkPhysicalDevice physical_device;
+    VkDevice device;
+    VkQueue queue;
+    uint32_t swapchain_image_count;
+    VkSwapchainKHR swapchain;
+    VkImage swapchain_images[MAX_SWAPCHAIN_IMAGES];
 };
 
 /* Engine exported functions */
