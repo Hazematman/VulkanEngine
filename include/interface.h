@@ -11,6 +11,7 @@
 #define MAX_QUEUE_COUNT 4
 #define MAX_PRESENT_MODES_COUNT 6
 #define MAX_SWAPCHAIN_IMAGES 3
+#define MAX_FRAMES 2
 
 #define DEFAULT_WIDTH 800
 #define DEFAULT_HEIGHT 600
@@ -56,6 +57,10 @@ struct Interface
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
     PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR;
     PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR;
+    PFN_vkCreateCommandPool vkCreateCommandPool;
+    PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
+    PFN_vkCreateSemaphore vkCreateSemaphore;
+    PFN_vkCreateFence vkCreateFence;
     
     /* Data */
     AppInfo app_info;
@@ -70,9 +75,15 @@ struct Interface
     VkPhysicalDevice physical_device;
     VkDevice device;
     VkQueue queue;
+    uint32_t queue_family_index;
     uint32_t swapchain_image_count;
     VkSwapchainKHR swapchain;
     VkImage swapchain_images[MAX_SWAPCHAIN_IMAGES];
+    VkCommandPool cmd_pool;
+    VkCommandBuffer cmd_buffers[MAX_FRAMES];
+    VkSemaphore img_avaliable_sem[MAX_FRAMES];
+    VkSemaphore render_finished_sem[MAX_FRAMES];
+    VkFence frame_fence[MAX_FRAMES];
 };
 
 /* Engine exported functions */

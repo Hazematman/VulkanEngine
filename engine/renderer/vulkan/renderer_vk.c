@@ -54,24 +54,27 @@ int renderer_init(Interface *func)
         error = true;
         func->printf("Failed to create instance\n");
     }
-    
-    if(!error && !init_surface(func))
+    else if(!init_surface(func))
     {
         error = true;
         func->printf("Failed to create surface\n");
     }
-    
-    if(!error && !init_device(func))
+    else if(!init_device(func))
     {
         error = true;
         func->printf("Failed to create device\n");
     }
-    
-    if(!error && !init_swapchain(func))
+    else if(!init_swapchain(func))
     {
         error = true;
         func->printf("Failed to create swapchain\n");
     }
+    else if(!init_render(func))
+    {
+        error = true;
+        func->printf("Failed to create render construct\n");
+    }
+    
     
     return error;
 }
@@ -204,6 +207,7 @@ bool init_device(Interface *func)
         func->physical_device = physical_device;
         func->device = device;
         func->queue = queue;
+        func->queue_family_index = queue_family_index;
     }
     
     return result == VK_SUCCESS;
@@ -296,4 +300,39 @@ bool init_swapchain(Interface *func)
     }
     
     return result == VK_SUCCESS;
+}
+
+bool init_render(Interface *func)
+{
+    VkCommandPoolCreateInfo cmd_pool_create_info = {0};
+    VkCommandBufferAllocateInfo cmd_buffer_alloc_info = {0};
+    VkSemaphoreCreateInfo sem_create_info = {0};
+    VkFenceCreateInfo fence_create_info = {0};
+    
+    cmd_pool_create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    cmd_pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    cmd_pool_create_info.queueFamilyIndex = func->queue_family_index;
+    
+    func->vkCreateCommandPool(func->device, &cmd_pool_create_info, 0, &func->cmd_pool);
+    
+    cmd_buffer_alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    cmd_buffer_alloc_info.commandPool = func->cmd_pool;
+    cmd_buffer_alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cmd_buffer_alloc_info.commandBufferCount = MAX_FRAMES;
+    
+    func->vkAllocateCommandBuffers(func->device, &cmd_buffer_alloc_info, func->cmd_buffers);
+    
+    sem_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    
+    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    
+    for(size_t i = 0; i < MAX_FRAMES; i++)
+    {
+        func->vkCreateSemaphore(func->device, &sem_create_info, 0, &func->img_avaliable_sem[i]);
+        func->vkCreateSemaphore(func->device, &sem_create_info, 0, &func->render_finished_sem[i]);
+        func->vkCreateFence(func->device, &fence_create_info, 0, &func->frame_fence[i]);
+    }
+    
+    return true;
 }

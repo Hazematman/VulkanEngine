@@ -76,6 +76,10 @@ void register_framework_functions(Interface *func)
     func->vkGetPhysicalDeviceSurfaceCapabilitiesKHR = vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
     func->vkCreateSwapchainKHR = vkCreateSwapchainKHR;
     func->vkGetSwapchainImagesKHR = vkGetSwapchainImagesKHR;
+    func->vkCreateCommandPool = vkCreateCommandPool;
+    func->vkAllocateCommandBuffers = vkAllocateCommandBuffers;
+    func->vkCreateSemaphore = vkCreateSemaphore;
+    func->vkCreateFence = vkCreateFence;
 }
 
 void reload_library(LibraryState *lib_state)
