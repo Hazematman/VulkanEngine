@@ -91,5 +91,5 @@ void renderer_draw(Interface *func)
     
     func->vkQueuePresentKHR(func->queue, &present_info);
     
-    func->frame_index = (func->frame_index + 1) % MAX_FRAMES;
+    func->frame_index = (func->frame_index + 1) % func->swapchain_image_count;
 }
