@@ -18,6 +18,7 @@ typedef struct
     void *library;
     Interface func;
     PFN_renderer_init renderer_init;
+    PFN_renderer_draw renderer_draw;
 } LibraryState;
 
 void get_app_info(Interface *func)
@@ -53,6 +54,7 @@ bool create_surface(Interface *func)
 void register_engine_functions(LibraryState *lib_state)
 {
     lib_state->renderer_init = SDL_LoadFunction(lib_state->library, "renderer_init");
+    lib_state->renderer_draw = SDL_LoadFunction(lib_state->library, "renderer_draw");
 }
 
 void register_framework_functions(Interface *func)
@@ -80,6 +82,15 @@ void register_framework_functions(Interface *func)
     func->vkAllocateCommandBuffers = vkAllocateCommandBuffers;
     func->vkCreateSemaphore = vkCreateSemaphore;
     func->vkCreateFence = vkCreateFence;
+    func->vkWaitForFences = vkWaitForFences;
+    func->vkResetFences = vkResetFences;
+    func->vkAcquireNextImageKHR = vkAcquireNextImageKHR;
+    func->vkBeginCommandBuffer = vkBeginCommandBuffer;
+    func->vkEndCommandBuffer = vkEndCommandBuffer;
+    func->vkQueueSubmit = vkQueueSubmit;
+    func->vkQueuePresentKHR = vkQueuePresentKHR;
+    func->vkCmdPipelineBarrier = vkCmdPipelineBarrier;
+    func->vkCmdClearColorImage = vkCmdClearColorImage;
 }
 
 void reload_library(LibraryState *lib_state)
@@ -158,6 +169,8 @@ int main()
                 running = false;
             }
         }
+        
+        lib_state.renderer_draw(&lib_state.func);
     }
     
     return 0;

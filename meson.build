@@ -1,7 +1,8 @@
 project('engine', 'c')
 
 engine_files = [
-    'engine/renderer/vulkan/renderer_vk.c'
+    'engine/renderer/vulkan/renderer_vk.c',
+    'engine/renderer/vulkan/renderer_vk_draw.c'
 ]
 
 framework_files = [

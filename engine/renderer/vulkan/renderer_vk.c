@@ -242,7 +242,7 @@ bool init_swapchain(Interface *func)
     
     func->vkGetPhysicalDeviceSurfacePresentModesKHR(
         func->physical_device, func->surface, &present_mode_count, present_modes);
-    
+#if 0 
     for(uint32_t i = 0; i < present_mode_count; i++)
     {
         switch(present_modes[i])
@@ -255,6 +255,7 @@ bool init_swapchain(Interface *func)
                 break;
         }
     }
+#endif
     
     func->vkGetPhysicalDeviceSurfaceCapabilitiesKHR(func->physical_device, func->surface, &surface_capabilities);
     
@@ -333,6 +334,8 @@ bool init_render(Interface *func)
         func->vkCreateSemaphore(func->device, &sem_create_info, 0, &func->render_finished_sem[i]);
         func->vkCreateFence(func->device, &fence_create_info, 0, &func->frame_fence[i]);
     }
+    
+    func->frame_index = 0;
     
     return true;
 }

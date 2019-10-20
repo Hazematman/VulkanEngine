@@ -61,6 +61,15 @@ struct Interface
     PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
     PFN_vkCreateSemaphore vkCreateSemaphore;
     PFN_vkCreateFence vkCreateFence;
+    PFN_vkWaitForFences vkWaitForFences;
+    PFN_vkResetFences vkResetFences;
+    PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR;
+    PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
+    PFN_vkEndCommandBuffer vkEndCommandBuffer;
+    PFN_vkQueueSubmit vkQueueSubmit;
+    PFN_vkQueuePresentKHR vkQueuePresentKHR;
+    PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier;
+    PFN_vkCmdClearColorImage vkCmdClearColorImage;
     
     /* Data */
     AppInfo app_info;
@@ -84,10 +93,12 @@ struct Interface
     VkSemaphore img_avaliable_sem[MAX_FRAMES];
     VkSemaphore render_finished_sem[MAX_FRAMES];
     VkFence frame_fence[MAX_FRAMES];
+    uint32_t frame_index;
 };
 
 /* Engine exported functions */
-typedef void(*PFN_test)(Interface *func);
-typedef int(*PFN_renderer_init)(Interface *func);
+typedef void (*PFN_test)(Interface *func);
+typedef int (*PFN_renderer_init)(Interface *func);
+typedef void (*PFN_renderer_draw)(Interface *func);
 
 #endif
