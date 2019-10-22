@@ -20,8 +20,6 @@ static VkInstanceCreateInfo create_info =
 {
     .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
     .pApplicationInfo = &app_info,
-    .enabledLayerCount = enabled_layer_count,
-    .ppEnabledLayerNames = enabled_layers,
 };
 
 /* Call back for debug function */
@@ -90,29 +88,38 @@ bool init_vulkan(Interface *func)
         
         create_info.enabledExtensionCount = func->app_info.extension_count;
         create_info.ppEnabledExtensionNames = func->app_info.enabled_extensions;
+        
+        if(func->app_info.debug)
+        {
+            create_info.ppEnabledLayerNames = enabled_layers;
+            create_info.enabledLayerCount = enabled_layer_count;
+        }
     
         result = func->vkCreateInstance(&create_info, 0, &func->instance);
     
         if(result == VK_SUCCESS)
         {
-            result = VK_ERROR_INITIALIZATION_FAILED;
-            /* Since debug reporting is an extension
-               we need to use getProcAddr to actually
-               find the function pointer */
-            func->vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)func->vkGetInstanceProcAddr(func->instance, "vkCreateDebugReportCallbackEXT");
-            
-            if(func->vkCreateDebugReportCallbackEXT)
+            if(func->app_info.debug)
             {
-                result = func->vkCreateDebugReportCallbackEXT(func->instance, &debug_callback_create_info, 0, &func->debug_callback);
-            }
-            else
-            {
-                func->printf("Failed to find debug report callback\n");
+                result = VK_ERROR_INITIALIZATION_FAILED;
+                /* Since debug reporting is an extension
+                   we need to use getProcAddr to actually
+                   find the function pointer */
+                func->vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)func->vkGetInstanceProcAddr(func->instance, "vkCreateDebugReportCallbackEXT");
+                
+                if(func->vkCreateDebugReportCallbackEXT)
+                {
+                    result = func->vkCreateDebugReportCallbackEXT(func->instance, &debug_callback_create_info, 0, &func->debug_callback);
+                }
+                else
+                {
+                    func->printf("Failed to find debug report callback\n");
+                }
             }
         }
         else
         {
-            func->printf("Failed to create instance\n");
+            func->printf("Failed to create instance with error %d\n", result);
         }
     }
     else

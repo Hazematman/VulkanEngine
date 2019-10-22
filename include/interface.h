@@ -21,6 +21,7 @@ typedef struct
 {
     unsigned int extension_count;
     const char *enabled_extensions[MAX_EXTENSIONS];
+    bool debug;
 } AppInfo;
 
 struct Interface;

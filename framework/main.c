@@ -144,13 +144,18 @@ int init(LibraryState *lib_state)
     return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
     bool running = true;
     LibraryState lib_state = {0};
     if(0 != SDL_Init(SDL_INIT_EVERYTHING))
     {
         printf("Error during SDL init\n%s\n", SDL_GetError());
+    }
+    
+    if(argc > 1 && strcmp(argv[1], "-d") == 0)
+    {
+        lib_state.func.app_info.debug = true;
     }
     
     init(&lib_state);
