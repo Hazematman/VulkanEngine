@@ -77,6 +77,11 @@ int renderer_init(Interface *func)
         error = true;
         func->printf("Failed to create render pass\n");
     }
+    else if(!init_framebuffers(func))
+    {
+        error = true;
+        func->printf("Failed to create framebuffers\n");
+    }
     
     
     return error;
@@ -318,6 +323,7 @@ bool init_swapchain(Interface *func)
             func->swapchain_image_count = swapchain_image_count;
             func->swapchain = swapchain;
             func->surface_format = surface_format;
+            func->swapchain_extent = swapchain_extent;
         }
     }
     
@@ -403,6 +409,53 @@ bool init_render_pass(Interface *func)
     render_pass_create_info.pDependencies = &subpass_depend;
     
     result = func->vkCreateRenderPass(func->device, &render_pass_create_info, 0, &func->render_pass);
+    
+    return result == VK_SUCCESS;
+}
+
+bool init_framebuffers(Interface *func)
+{
+    VkResult result = VK_ERROR_INITIALIZATION_FAILED;
+    VkImageViewCreateInfo image_view_create_info = {0};
+    VkFramebufferCreateInfo framebuffer_create_info = {0};
+    
+    image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    image_view_create_info.format = func->surface_format.format;    
+    image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image_view_create_info.subresourceRange.baseMipLevel = 0;
+    image_view_create_info.subresourceRange.levelCount = 1;
+    image_view_create_info.subresourceRange.baseArrayLayer = 0;
+    image_view_create_info.subresourceRange.layerCount = 1;
+    
+    framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebuffer_create_info.renderPass = func->render_pass;
+    framebuffer_create_info.attachmentCount = 1;
+    framebuffer_create_info.width = func->swapchain_extent.width;
+    framebuffer_create_info.height = func->swapchain_extent.height;
+    framebuffer_create_info.layers = 1;
+    
+    
+    for(uint32_t i = 0; i < func->swapchain_image_count; i++)
+    {
+        image_view_create_info.image = func->swapchain_images[i];
+        result = func->vkCreateImageView(func->device, &image_view_create_info, 0, &func->swapchain_image_views[i]);
+    
+        if(result != VK_SUCCESS)
+        {
+            func->printf("Failed to create image view %d\n", result);
+        }
+        else
+        {
+            framebuffer_create_info.pAttachments = &func->swapchain_image_views[i];
+            result = func->vkCreateFramebuffer(func->device, &framebuffer_create_info, 0, &func->framebuffers[i]);
+        }
+
+        if(result != VK_SUCCESS)
+        {
+            break;
+        }
+    }
     
     return result == VK_SUCCESS;
 }

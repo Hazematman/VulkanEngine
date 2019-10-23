@@ -72,6 +72,8 @@ struct Interface
     PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier;
     PFN_vkCmdClearColorImage vkCmdClearColorImage;
     PFN_vkCreateRenderPass vkCreateRenderPass;
+    PFN_vkCreateImageView vkCreateImageView;
+    PFN_vkCreateFramebuffer vkCreateFramebuffer;
     
     /* Data */
     AppInfo app_info;
@@ -90,6 +92,8 @@ struct Interface
     uint32_t swapchain_image_count;
     VkSwapchainKHR swapchain;
     VkImage swapchain_images[MAX_SWAPCHAIN_IMAGES];
+    VkImageView swapchain_image_views[MAX_SWAPCHAIN_IMAGES];
+    VkFramebuffer framebuffers[MAX_SWAPCHAIN_IMAGES];
     VkCommandPool cmd_pool;
     VkCommandBuffer cmd_buffers[MAX_FRAMES];
     VkSemaphore img_avaliable_sem[MAX_FRAMES];
@@ -98,6 +102,7 @@ struct Interface
     uint32_t frame_index;
     VkRenderPass render_pass;
     VkSurfaceFormatKHR surface_format;
+    VkExtent2D swapchain_extent;
 };
 
 /* Engine exported functions */

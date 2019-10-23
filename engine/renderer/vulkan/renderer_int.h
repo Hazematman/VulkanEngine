@@ -9,5 +9,6 @@ bool init_device(Interface *func);
 bool init_swapchain(Interface *func);
 bool init_render(Interface *func);
 bool init_render_pass(Interface *func);
+bool init_framebuffers(Interface *func);
 
 #endif

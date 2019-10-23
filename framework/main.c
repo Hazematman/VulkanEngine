@@ -92,6 +92,8 @@ void register_framework_functions(Interface *func)
     func->vkCmdPipelineBarrier = vkCmdPipelineBarrier;
     func->vkCmdClearColorImage = vkCmdClearColorImage;
     func->vkCreateRenderPass = vkCreateRenderPass;
+    func->vkCreateImageView = vkCreateImageView;
+    func->vkCreateFramebuffer = vkCreateFramebuffer;
 }
 
 void reload_library(LibraryState *lib_state)
