@@ -301,9 +301,18 @@ bool init_swapchain(Interface *func)
     else
     {
         func->vkGetSwapchainImagesKHR(func->device, swapchain, &swapchain_image_count, NULL);
-        func->vkGetSwapchainImagesKHR(func->device, swapchain, &swapchain_image_count, func->swapchain_images);
-        func->swapchain_image_count = swapchain_image_count;
-        func->swapchain = swapchain;
+        if(swapchain_image_count >= MAX_SWAPCHAIN_IMAGES)
+        {
+            result = VK_ERROR_INITIALIZATION_FAILED;
+            func->printf("Maximum number of swapchain images reached\n");
+            func->printf("TODO fix this\n");
+        }
+        else
+        {
+            func->vkGetSwapchainImagesKHR(func->device, swapchain, &swapchain_image_count, func->swapchain_images);
+            func->swapchain_image_count = swapchain_image_count;
+            func->swapchain = swapchain;
+        }
     }
     
     return result == VK_SUCCESS;
