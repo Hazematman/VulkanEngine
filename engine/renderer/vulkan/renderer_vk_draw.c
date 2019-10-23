@@ -35,6 +35,7 @@ void renderer_draw(Interface *func)
     renderpass_begin.renderArea.extent = func->swapchain_extent;
     
     func->vkCmdBeginRenderPass(func->cmd_buffers[index], &renderpass_begin, VK_SUBPASS_CONTENTS_INLINE);
+    func->vkCmdBindPipeline(func->cmd_buffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, func->pipeline);
     func->vkCmdEndRenderPass(func->cmd_buffers[index]);
     
     func->vkEndCommandBuffer(func->cmd_buffers[index]);

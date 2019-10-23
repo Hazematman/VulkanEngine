@@ -1,5 +1,6 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
 #define VK_NO_PROTOTYPES
@@ -32,6 +33,11 @@ typedef void*(*PFN_malloc)(size_t size);
 typedef void (*PFN_free)(void *ptr);
 typedef void*(*PFN_realloc)(void *ptr, size_t size);
 typedef int (*PFN_printf)(const char *str, ...);
+typedef FILE* (*PFN_fopen)(const char *pathname, const char *mode);
+typedef int (*PFN_fclose)(FILE *stream);
+typedef int (*PFN_fseek)(FILE *stream, long offset, int whence);
+typedef long (*PFN_ftell)(FILE *stream);
+typedef size_t (*PFN_fread)(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 typedef bool (*PFN_create_surface)(Interface *func);
 
@@ -42,6 +48,12 @@ struct Interface
     PFN_free free;
     PFN_realloc realloc;
     PFN_printf printf;
+    PFN_fopen fopen;
+    PFN_fclose fclose;
+    PFN_fseek fseek;
+    PFN_ftell ftell;
+    PFN_fread fread;
+    
     PFN_create_surface create_surface;
     
     /* Vulkan functions */
@@ -79,6 +91,7 @@ struct Interface
     PFN_vkCreatePipelineLayout vkCreatePipelineLayout;
     PFN_vkCreateGraphicsPipelines vkCreateGraphicsPipelines;
     PFN_vkCreateShaderModule vkCreateShaderModule;
+    PFN_vkCmdBindPipeline vkCmdBindPipeline;
     
     /* Data */
     AppInfo app_info;

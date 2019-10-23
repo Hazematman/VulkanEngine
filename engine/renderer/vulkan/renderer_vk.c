@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "interface.h"
+#include "util.h"
 #include "renderer_int.h"
 
 static const VkApplicationInfo app_info = 
@@ -92,7 +93,6 @@ int renderer_init(Interface *func)
         error = true;
         func->printf("Failed to create pipeline\n");
     }
-    
     
     return !error;
 }
@@ -475,12 +475,12 @@ bool init_shaders(Interface *func)
     VkResult result = VK_ERROR_INITIALIZATION_FAILED;
     VkShaderModuleCreateInfo shader_create_info = {0}; 
     void *vert_shader_data = NULL;
-    uint32_t vert_shader_size = 0;
+    size_t vert_shader_size = 0;
     void *frag_shader_data = NULL;
-    uint32_t frag_shader_size = 0;
+    size_t frag_shader_size = 0;
     
-    util_load_whole_file("vert.spirv", &vert_shader_data, &vert_shader_size);
-    util_load_whole_file("frag.spirv", &frag_shader_data, &frag_shader_size);
+    util_load_whole_file(func, "data/shaders/vert.spirv", &vert_shader_data, &vert_shader_size);
+    util_load_whole_file(func, "data/shaders/frag.spirv", &frag_shader_data, &frag_shader_size);
     
     if(!vert_shader_data || !frag_shader_data)
     {

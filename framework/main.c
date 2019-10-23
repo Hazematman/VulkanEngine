@@ -63,6 +63,12 @@ void register_framework_functions(Interface *func)
     func->free = free;
     func->realloc = realloc;
     func->printf = printf;
+    func->fopen = fopen;
+    func->fclose = fclose;
+    func->fseek = fseek;
+    func->ftell = ftell;
+    func->fread = fread;
+    
     func->create_surface = create_surface;
     
     /* Register vulkan functions */
@@ -99,6 +105,7 @@ void register_framework_functions(Interface *func)
     func->vkCreatePipelineLayout = vkCreatePipelineLayout;
     func->vkCreateGraphicsPipelines = vkCreateGraphicsPipelines;
     func->vkCreateShaderModule = vkCreateShaderModule;
+    func->vkCmdBindPipeline = vkCmdBindPipeline;
 }
 
 void reload_library(LibraryState *lib_state)
@@ -132,7 +139,7 @@ void reload_library(LibraryState *lib_state)
     }
 }
 
-int init(LibraryState *lib_state) 
+bool init(LibraryState *lib_state) 
 {
     Interface *func = &lib_state->func;
     register_framework_functions(&lib_state->func);
@@ -149,7 +156,7 @@ int init(LibraryState *lib_state)
     /* Grab any app info we need to init the renderer */
     get_app_info(func);
     
-    return 0;
+    return true;
 }
 
 int main(int argc, char *argv[])
@@ -168,26 +175,31 @@ int main(int argc, char *argv[])
     
     if(!init(&lib_state))
     {
-        printf("Failed to init vulkan\n");
+        printf("Failed to init app\n");
     }
     else
     {
         reload_library(&lib_state);
         
-        lib_state.renderer_init(&lib_state.func);
-        
-        SDL_Event e;
-        while(running)
+        if(!lib_state.renderer_init(&lib_state.func))
         {
-            while(SDL_PollEvent(&e))
+            printf("Failed to init vulkan\n");
+        }
+        else
+        {
+            SDL_Event e;
+            while(running)
             {
-                if(e.type == SDL_QUIT)
+                while(SDL_PollEvent(&e))
                 {
-                    running = false;
+                    if(e.type == SDL_QUIT)
+                    {
+                        running = false;
+                    }
                 }
+                
+                lib_state.renderer_draw(&lib_state.func);
             }
-            
-            lib_state.renderer_draw(&lib_state.func);
         }
     }
     
