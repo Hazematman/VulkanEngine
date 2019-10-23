@@ -91,6 +91,7 @@ void register_framework_functions(Interface *func)
     func->vkQueuePresentKHR = vkQueuePresentKHR;
     func->vkCmdPipelineBarrier = vkCmdPipelineBarrier;
     func->vkCmdClearColorImage = vkCmdClearColorImage;
+    func->vkCreateRenderPass = vkCreateRenderPass;
 }
 
 void reload_library(LibraryState *lib_state)

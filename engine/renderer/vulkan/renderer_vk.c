@@ -72,6 +72,11 @@ int renderer_init(Interface *func)
         error = true;
         func->printf("Failed to create render construct\n");
     }
+    else if(!init_render_pass(func))
+    {
+        error = true;
+        func->printf("Failed to create render pass\n");
+    }
     
     
     return error;
@@ -312,6 +317,7 @@ bool init_swapchain(Interface *func)
             func->vkGetSwapchainImagesKHR(func->device, swapchain, &swapchain_image_count, func->swapchain_images);
             func->swapchain_image_count = swapchain_image_count;
             func->swapchain = swapchain;
+            func->surface_format = surface_format;
         }
     }
     
@@ -353,4 +359,50 @@ bool init_render(Interface *func)
     func->frame_index = 0;
     
     return true;
+}
+
+bool init_render_pass(Interface *func)
+{
+    VkResult result = VK_ERROR_INITIALIZATION_FAILED;
+    VkRenderPassCreateInfo render_pass_create_info = {0};
+    VkAttachmentDescription attachment_desc = {0};
+    VkSubpassDescription subpass_desc = {0};
+    VkSubpassDependency subpass_depend = {0};
+    VkAttachmentReference attachment_ref = {0};
+    
+    attachment_desc.format = func->surface_format.format;
+    attachment_desc.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment_desc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment_desc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachment_desc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment_desc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment_desc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment_desc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    
+    subpass_desc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass_desc.colorAttachmentCount = 1;
+    subpass_desc.pColorAttachments = &attachment_ref;
+    
+    attachment_ref.attachment = 0;
+    attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    
+    subpass_depend.srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpass_depend.dstSubpass = 0;
+    subpass_depend.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpass_depend.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpass_depend.srcAccessMask = 0;
+    subpass_depend.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    subpass_depend.dependencyFlags = 0;
+    
+    render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+    render_pass_create_info.attachmentCount = 1,
+    render_pass_create_info.pAttachments = &attachment_desc;
+    render_pass_create_info.subpassCount = 1;
+    render_pass_create_info.pSubpasses = &subpass_desc;
+    render_pass_create_info.dependencyCount = 1;
+    render_pass_create_info.pDependencies = &subpass_depend;
+    
+    result = func->vkCreateRenderPass(func->device, &render_pass_create_info, 0, &func->render_pass);
+    
+    return result == VK_SUCCESS;
 }

@@ -71,6 +71,7 @@ struct Interface
     PFN_vkQueuePresentKHR vkQueuePresentKHR;
     PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier;
     PFN_vkCmdClearColorImage vkCmdClearColorImage;
+    PFN_vkCreateRenderPass vkCreateRenderPass;
     
     /* Data */
     AppInfo app_info;
@@ -95,6 +96,8 @@ struct Interface
     VkSemaphore render_finished_sem[MAX_FRAMES];
     VkFence frame_fence[MAX_FRAMES];
     uint32_t frame_index;
+    VkRenderPass render_pass;
+    VkSurfaceFormatKHR surface_format;
 };
 
 /* Engine exported functions */
