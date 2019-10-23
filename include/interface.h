@@ -76,6 +76,9 @@ struct Interface
     PFN_vkCreateFramebuffer vkCreateFramebuffer;
     PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass;
     PFN_vkCmdEndRenderPass vkCmdEndRenderPass;
+    PFN_vkCreatePipelineLayout vkCreatePipelineLayout;
+    PFN_vkCreateGraphicsPipelines vkCreateGraphicsPipelines;
+    PFN_vkCreateShaderModule vkCreateShaderModule;
     
     /* Data */
     AppInfo app_info;
@@ -105,6 +108,9 @@ struct Interface
     VkRenderPass render_pass;
     VkSurfaceFormatKHR surface_format;
     VkExtent2D swapchain_extent;
+    VkPipelineLayout pipeline_layout;
+    VkPipeline pipeline;
+    VkShaderModule vert_shader, frag_shader;
 };
 
 /* Engine exported functions */

@@ -96,6 +96,9 @@ void register_framework_functions(Interface *func)
     func->vkCreateFramebuffer = vkCreateFramebuffer;
     func->vkCmdBeginRenderPass = vkCmdBeginRenderPass;
     func->vkCmdEndRenderPass = vkCmdEndRenderPass;
+    func->vkCreatePipelineLayout = vkCreatePipelineLayout;
+    func->vkCreateGraphicsPipelines = vkCreateGraphicsPipelines;
+    func->vkCreateShaderModule = vkCreateShaderModule;
 }
 
 void reload_library(LibraryState *lib_state)
@@ -163,24 +166,29 @@ int main(int argc, char *argv[])
         lib_state.func.app_info.debug = true;
     }
     
-    init(&lib_state);
-    
-    reload_library(&lib_state);
-    
-    lib_state.renderer_init(&lib_state.func);
-    
-    SDL_Event e;
-    while(running)
+    if(!init(&lib_state))
     {
-        while(SDL_PollEvent(&e))
-        {
-            if(e.type == SDL_QUIT)
-            {
-                running = false;
-            }
-        }
+        printf("Failed to init vulkan\n");
+    }
+    else
+    {
+        reload_library(&lib_state);
         
-        lib_state.renderer_draw(&lib_state.func);
+        lib_state.renderer_init(&lib_state.func);
+        
+        SDL_Event e;
+        while(running)
+        {
+            while(SDL_PollEvent(&e))
+            {
+                if(e.type == SDL_QUIT)
+                {
+                    running = false;
+                }
+            }
+            
+            lib_state.renderer_draw(&lib_state.func);
+        }
     }
     
     return 0;

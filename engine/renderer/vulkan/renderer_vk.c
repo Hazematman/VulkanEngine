@@ -82,9 +82,19 @@ int renderer_init(Interface *func)
         error = true;
         func->printf("Failed to create framebuffers\n");
     }
+    else if(!init_shaders(func))
+    {
+        error = true;
+        func->printf("Failed to create shaders\n");
+    }
+    else if(!init_pipeline(func))
+    {
+        error = true;
+        func->printf("Failed to create pipeline\n");
+    }
     
     
-    return error;
+    return !error;
 }
 
 bool init_vulkan(Interface *func)
@@ -455,6 +465,156 @@ bool init_framebuffers(Interface *func)
         {
             break;
         }
+    }
+    
+    return result == VK_SUCCESS;
+}
+
+bool init_shaders(Interface *func)
+{
+    VkResult result = VK_ERROR_INITIALIZATION_FAILED;
+    VkShaderModuleCreateInfo shader_create_info = {0}; 
+    void *vert_shader_data = NULL;
+    uint32_t vert_shader_size = 0;
+    void *frag_shader_data = NULL;
+    uint32_t frag_shader_size = 0;
+    
+    util_load_whole_file("vert.spirv", &vert_shader_data, &vert_shader_size);
+    util_load_whole_file("frag.spirv", &frag_shader_data, &frag_shader_size);
+    
+    if(!vert_shader_data || !frag_shader_data)
+    {
+        func->printf("Failed to load vertex or fragment shader\n");
+    }
+    else
+    {
+        shader_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_create_info.codeSize = vert_shader_size;
+        shader_create_info.pCode = vert_shader_data;
+        
+        result = func->vkCreateShaderModule(func->device, &shader_create_info, 0, &func->vert_shader);
+        
+        if(result != VK_SUCCESS)
+        {
+            func->printf("Failed to create vert shader module\n");
+        }
+        else
+        {
+            shader_create_info.codeSize = frag_shader_size;
+            shader_create_info.pCode = frag_shader_data;
+            
+            result = func->vkCreateShaderModule(func->device, &shader_create_info, 0, &func->frag_shader);
+        }
+    }
+    
+    return result == VK_SUCCESS;
+}
+
+bool init_pipeline(Interface *func)
+{
+    VkResult result = VK_ERROR_INITIALIZATION_FAILED;
+    VkPipelineShaderStageCreateInfo shader_stages[2] = {0};
+    VkPipelineVertexInputStateCreateInfo vertex_input_state = {0};
+    VkPipelineInputAssemblyStateCreateInfo input_assembly_state = {0};
+    VkPipelineRasterizationStateCreateInfo rasteriation_state = {0};
+    VkPipelineViewportStateCreateInfo viewport_state = {0};
+    VkPipelineMultisampleStateCreateInfo multisample_state = {0};
+    VkPipelineColorBlendStateCreateInfo color_blend_state = {0};
+    VkPipelineDynamicStateCreateInfo dynamic_state_create_info = {0};
+    VkPipelineLayoutCreateInfo pipeline_layout_create_info = {0};
+    VkGraphicsPipelineCreateInfo pipeline_create_info = {0};
+    VkPipelineColorBlendAttachmentState color_blend_attachment_state[1] = {0};
+    VkDynamicState dynamic_states[2] = {0};
+    
+    shader_stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shader_stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+    shader_stages[0].module = func->vert_shader;
+    shader_stages[0].pName = "main";
+    
+    shader_stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shader_stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    shader_stages[1].module = func->frag_shader;
+    shader_stages[1].pName = "main";
+    
+    vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    
+    input_assembly_state.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    input_assembly_state.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    input_assembly_state.primitiveRestartEnable = VK_FALSE;
+    
+    rasteriation_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasteriation_state.depthClampEnable = VK_FALSE;
+    rasteriation_state.rasterizerDiscardEnable = VK_FALSE;
+    rasteriation_state.polygonMode = VK_POLYGON_MODE_FILL;
+    rasteriation_state.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasteriation_state.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasteriation_state.depthBiasEnable = VK_FALSE;
+    rasteriation_state.depthBiasConstantFactor = 0.0f;
+    rasteriation_state.depthBiasClamp = 0.0f;
+    rasteriation_state.depthBiasSlopeFactor = 0.0f;
+    rasteriation_state.lineWidth = 1.0f;
+    
+    viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_state.viewportCount = 1;
+    viewport_state.pViewports = 0;
+    viewport_state.scissorCount = 1;
+    viewport_state.pScissors = 0;
+    
+    multisample_state.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisample_state.sampleShadingEnable = VK_FALSE;
+    multisample_state.minSampleShading = 1.0f;
+    multisample_state.pSampleMask = 0;
+    multisample_state.alphaToCoverageEnable = VK_FALSE;
+    multisample_state.alphaToOneEnable = VK_FALSE;
+    
+    color_blend_state.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    color_blend_state.logicOpEnable = VK_FALSE;
+    color_blend_state.attachmentCount = 1;
+    color_blend_state.pAttachments = color_blend_attachment_state;
+    
+    color_blend_attachment_state[0].blendEnable = VK_FALSE;
+    color_blend_attachment_state[0].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    color_blend_attachment_state[0].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+    color_blend_attachment_state[0].colorBlendOp = VK_BLEND_OP_ADD;
+    color_blend_attachment_state[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    color_blend_attachment_state[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+    color_blend_attachment_state[0].alphaBlendOp = VK_BLEND_OP_ADD;
+    color_blend_attachment_state[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    
+    dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamic_state_create_info.dynamicStateCount = 2;
+    dynamic_state_create_info.pDynamicStates = dynamic_states;
+    
+    dynamic_states[0] = VK_DYNAMIC_STATE_VIEWPORT;
+    dynamic_states[1] = VK_DYNAMIC_STATE_SCISSOR;
+    
+    pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    
+    result = func->vkCreatePipelineLayout(func->device, &pipeline_layout_create_info, 0, &func->pipeline_layout);
+    
+    if(result != VK_SUCCESS)
+    {
+        func->printf("Failed to create pipeline layout\n");
+    }
+    else
+    {
+    
+        pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipeline_create_info.stageCount = 2;
+        pipeline_create_info.pStages = shader_stages;
+        pipeline_create_info.pVertexInputState = &vertex_input_state;
+        pipeline_create_info.pInputAssemblyState = &input_assembly_state;
+        pipeline_create_info.pViewportState = &viewport_state;
+        pipeline_create_info.pRasterizationState = &rasteriation_state;
+        pipeline_create_info.pMultisampleState = &multisample_state;
+        pipeline_create_info.pColorBlendState = &color_blend_state;
+        pipeline_create_info.pDynamicState = &dynamic_state_create_info;
+        pipeline_create_info.layout = func->pipeline_layout;
+        pipeline_create_info.renderPass = func->render_pass;
+        
+        result = func->vkCreateGraphicsPipelines(
+            func->device, VK_NULL_HANDLE, 1, &pipeline_create_info, 0, &func->pipeline);
     }
     
     return result == VK_SUCCESS;
