@@ -74,6 +74,8 @@ struct Interface
     PFN_vkCreateRenderPass vkCreateRenderPass;
     PFN_vkCreateImageView vkCreateImageView;
     PFN_vkCreateFramebuffer vkCreateFramebuffer;
+    PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass;
+    PFN_vkCmdEndRenderPass vkCmdEndRenderPass;
     
     /* Data */
     AppInfo app_info;

@@ -10,10 +10,8 @@ void renderer_draw(Interface *func)
     VkCommandBufferBeginInfo begin_info = {0};
     VkSubmitInfo submit_info = {0};
     VkPresentInfoKHR present_info = {0};
-    VkClearColorValue clear_color = {{1.0f, 0.0f, 0.0f, 1.0f}};
-    VkImageSubresourceRange sub_resource_range = {0};
-    VkImageMemoryBarrier optimal_clear = {0};
-    VkImageMemoryBarrier optimal_present = {0};
+    VkClearValue clear_value = {.color = {{ 0.0f, 0.1f, 0.2f, 1.0f }}};
+    VkRenderPassBeginInfo renderpass_begin = {0};
     
     
     func->vkWaitForFences(func->device, 1, &func->frame_fence[index], VK_TRUE, UINT64_MAX);
@@ -28,46 +26,16 @@ void renderer_draw(Interface *func)
     
     func->vkBeginCommandBuffer(func->cmd_buffers[index], &begin_info);
     
-    sub_resource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    sub_resource_range.baseMipLevel = 0;
-    sub_resource_range.levelCount = VK_REMAINING_MIP_LEVELS;
-    sub_resource_range.baseArrayLayer = 0;
-    sub_resource_range.layerCount = VK_REMAINING_ARRAY_LAYERS;
+    renderpass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderpass_begin.renderPass = func->render_pass;
+    renderpass_begin.framebuffer = func->framebuffers[image_index];
+    renderpass_begin.clearValueCount = 1;
+    renderpass_begin.pClearValues = &clear_value;
+    renderpass_begin.renderArea.offset = (VkOffset2D) { .x = 0,.y = 0 };
+    renderpass_begin.renderArea.extent = func->swapchain_extent;
     
-    optimal_clear.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    optimal_clear.srcAccessMask = 0;
-    optimal_clear.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    optimal_clear.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    optimal_clear.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    optimal_clear.srcQueueFamilyIndex = func->queue_family_index;
-    optimal_clear.dstQueueFamilyIndex = func->queue_family_index;
-    optimal_clear.image = func->swapchain_images[image_index];
-    optimal_clear.subresourceRange = sub_resource_range;
-    
-    func->vkCmdPipelineBarrier(
-        func->cmd_buffers[index], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        0, 0, NULL, 0, NULL, 1,
-        &optimal_clear);
-    
-    func->vkCmdClearColorImage(
-        func->cmd_buffers[index], func->swapchain_images[index],
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        &clear_color, 1, &sub_resource_range);
-    
-    optimal_present.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    optimal_present.srcAccessMask = 0;
-    optimal_present.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    optimal_present.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    optimal_present.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    optimal_present.srcQueueFamilyIndex = func->queue_family_index;
-    optimal_present.dstQueueFamilyIndex = func->queue_family_index;
-    optimal_present.image = func->swapchain_images[image_index];
-    optimal_present.subresourceRange = sub_resource_range;
-    
-    func->vkCmdPipelineBarrier(
-        func->cmd_buffers[index], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        0, 0, NULL, 0, NULL, 1,
-        &optimal_present);
+    func->vkCmdBeginRenderPass(func->cmd_buffers[index], &renderpass_begin, VK_SUBPASS_CONTENTS_INLINE);
+    func->vkCmdEndRenderPass(func->cmd_buffers[index]);
     
     func->vkEndCommandBuffer(func->cmd_buffers[index]);
     

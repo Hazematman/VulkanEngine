@@ -94,6 +94,8 @@ void register_framework_functions(Interface *func)
     func->vkCreateRenderPass = vkCreateRenderPass;
     func->vkCreateImageView = vkCreateImageView;
     func->vkCreateFramebuffer = vkCreateFramebuffer;
+    func->vkCmdBeginRenderPass = vkCmdBeginRenderPass;
+    func->vkCmdEndRenderPass = vkCmdEndRenderPass;
 }
 
 void reload_library(LibraryState *lib_state)
