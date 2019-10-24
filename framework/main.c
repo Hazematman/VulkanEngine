@@ -106,6 +106,9 @@ void register_framework_functions(Interface *func)
     func->vkCreateGraphicsPipelines = vkCreateGraphicsPipelines;
     func->vkCreateShaderModule = vkCreateShaderModule;
     func->vkCmdBindPipeline = vkCmdBindPipeline;
+    func->vkCmdSetViewport = vkCmdSetViewport;
+    func->vkCmdSetScissor = vkCmdSetScissor;
+    func->vkCmdDraw = vkCmdDraw;
 }
 
 void reload_library(LibraryState *lib_state)

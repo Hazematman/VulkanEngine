@@ -12,7 +12,8 @@ void renderer_draw(Interface *func)
     VkPresentInfoKHR present_info = {0};
     VkClearValue clear_value = {.color = {{ 0.0f, 0.1f, 0.2f, 1.0f }}};
     VkRenderPassBeginInfo renderpass_begin = {0};
-    
+    VkViewport viewport = {0.0f, 0.0f, func->swapchain_extent.width, func->swapchain_extent.height, 0.0f, 1.0f};
+    VkRect2D scissor = {{0, 0}, func->swapchain_extent};
     
     func->vkWaitForFences(func->device, 1, &func->frame_fence[index], VK_TRUE, UINT64_MAX);
     func->vkResetFences(func->device, 1, &func->frame_fence[index]);
@@ -36,6 +37,10 @@ void renderer_draw(Interface *func)
     
     func->vkCmdBeginRenderPass(func->cmd_buffers[index], &renderpass_begin, VK_SUBPASS_CONTENTS_INLINE);
     func->vkCmdBindPipeline(func->cmd_buffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, func->pipeline);
+    func->vkCmdSetViewport(func->cmd_buffers[index], 0, 1, &viewport);
+    func->vkCmdSetScissor(func->cmd_buffers[index], 0, 1, &scissor);
+    func->vkCmdDraw(func->cmd_buffers[index], 3, 1, 0, 0);
+    
     func->vkCmdEndRenderPass(func->cmd_buffers[index]);
     
     func->vkEndCommandBuffer(func->cmd_buffers[index]);

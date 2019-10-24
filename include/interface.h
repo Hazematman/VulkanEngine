@@ -92,6 +92,9 @@ struct Interface
     PFN_vkCreateGraphicsPipelines vkCreateGraphicsPipelines;
     PFN_vkCreateShaderModule vkCreateShaderModule;
     PFN_vkCmdBindPipeline vkCmdBindPipeline;
+    PFN_vkCmdSetViewport vkCmdSetViewport;
+    PFN_vkCmdSetScissor vkCmdSetScissor;
+    PFN_vkCmdDraw vkCmdDraw;
     
     /* Data */
     AppInfo app_info;
